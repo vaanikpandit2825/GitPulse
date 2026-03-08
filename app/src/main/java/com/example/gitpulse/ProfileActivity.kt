@@ -8,6 +8,7 @@ import com.example.gitpulse.data.model.GitHubUser
 import com.example.gitpulse.data.model.Repo
 import com.example.gitpulse.databinding.ActivityProfileBinding
 import com.example.gitpulse.viewmodel.GitHubViewModel
+import androidx.recyclerview.widget.LinearLayoutManager
 
 class ProfileActivity : AppCompatActivity() {
 
@@ -92,6 +93,12 @@ class ProfileActivity : AppCompatActivity() {
 
                 binding.tvDevScore.text = "Dev Score: $score"
             }
+            val adapter = RepoAdapter(repos)
+
+            binding.recyclerRepos.layoutManager =
+                LinearLayoutManager(this)
+
+            binding.recyclerRepos.adapter = adapter
         }
     }
 
