@@ -129,4 +129,22 @@ class ProfileActivity : AppCompatActivity() {
 
         return languageMap
     }
+
+    private fun checkRepoHealth(repo: Repo):String{
+        val health = mutableListOf<String>()
+
+        health.add("✔ README")
+
+        if(repo.license !=null){
+                health.add("✔ License")
+        }
+        else{
+            health.add("✔ License")
+        }
+
+        val lastUpdated = repo.updated_at.substring(0,10)
+        health.add("Updated : $lastUpdated")
+
+        return health.joinToString {"  "}
+    }
 }

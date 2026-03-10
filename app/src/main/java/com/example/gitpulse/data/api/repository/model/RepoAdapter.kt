@@ -38,5 +38,28 @@ class RepoAdapter(
 
         holder.binding.tvRepoDetails.text =
             "⭐ ${repo.stargazers_count}   $language"
+
+        val health = checkRepoHealth(repo)
+
+        holder.binding.tvRepoHealth.text = health
+    }
+
+    private fun checkRepoHealth(repo: Repo): String {
+
+        val health = mutableListOf<String>()
+
+        health.add("✔ README")
+
+        if (repo.license != null) {
+            health.add("✔ License")
+        } else {
+            health.add("❌ License")
+        }
+
+        val updatedDate = repo.updated_at.substring(0, 10)
+
+        health.add("Updated: $updatedDate")
+
+        return health.joinToString("   ")
     }
 }
