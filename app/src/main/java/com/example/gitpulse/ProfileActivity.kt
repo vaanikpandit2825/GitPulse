@@ -9,7 +9,9 @@ import com.example.gitpulse.data.model.Repo
 import com.example.gitpulse.databinding.ActivityProfileBinding
 import com.example.gitpulse.viewmodel.GitHubViewModel
 import androidx.recyclerview.widget.LinearLayoutManager
-
+import android.content.Intent
+import com.example.gitpulse.ContributionActivity
+import org.jsoup.Jsoup
 class ProfileActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityProfileBinding
@@ -19,6 +21,8 @@ class ProfileActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
 
         binding = ActivityProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -38,6 +42,12 @@ class ProfileActivity : AppCompatActivity() {
         viewModel.fetchRepos(username)
 
         observeData()
+
+        binding.btnContribution.setOnClickListener{
+            val intent = Intent(this, ContributionActivity::class.java)
+            intent.putExtra("USERNAME",username)
+            startActivity(intent)
+        }
     }
 
     private fun observeData() {
@@ -147,4 +157,8 @@ class ProfileActivity : AppCompatActivity() {
 
         return health.joinToString {"  "}
     }
+
+
+
+
 }
