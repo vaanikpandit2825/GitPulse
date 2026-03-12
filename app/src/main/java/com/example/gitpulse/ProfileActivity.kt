@@ -10,8 +10,13 @@ import com.example.gitpulse.databinding.ActivityProfileBinding
 import com.example.gitpulse.viewmodel.GitHubViewModel
 import androidx.recyclerview.widget.LinearLayoutManager
 import android.content.Intent
+import android.view.View
 import com.example.gitpulse.ContributionActivity
 import org.jsoup.Jsoup
+import android.graphics.Bitmap
+import androidx.core.content.FileProvider
+import java.io.File
+import java.io.FileOutputStream
 class ProfileActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityProfileBinding
@@ -156,6 +161,44 @@ class ProfileActivity : AppCompatActivity() {
         health.add("Updated : $lastUpdated")
 
         return health.joinToString {"  "}
+    }
+
+    private fun shareCard(){
+        val card = ShareCardView(this)
+        card.username = viewModel.user.value?.login?: ""
+        card.totalCommits = "328"
+        card.longestStreak = "14"
+        card.topLanguage = "Kotlin"
+
+        card.measure(
+            View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(1920, View.MeasureSpec.EXACTLY)
+        )
+        card.layout(0,0,1800,1920)
+        val bitmap = card.toBitmap()
+
+        val file = File(cacheDir, "sharecard.png")
+        val stream = FileOutputStream(file)
+
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+        stream.flush()
+        stream.close()
+
+        val uri = FileProvider.getUriForFile(this, "${packageName}.provider", file)
+
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "image/png"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+
+        val vibes = Vibe.values()
+        card.currentVibe =  vibes.random()
+
+
+
+        startActivity(Intent.createChooser(intent, "Share your GitPulse card!"))
+
     }
 
 
