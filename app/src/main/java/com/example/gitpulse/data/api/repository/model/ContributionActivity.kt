@@ -98,7 +98,7 @@ class ContributionActivity : AppCompatActivity() {
                         GridLayoutManager(this, 7, GridLayoutManager.HORIZONTAL, false)
                     binding.recyclerContribution.adapter = ContributionAdapter(contributions)
 
-                    binding.tvUsername.text = username
+
                     binding.tvTotalCommits.text = total.toString()
                     binding.tvCurrentStreak.text = "$currentStreak days"
                     binding.tvLongestStreak.text = "$longestStreak days"
