@@ -49,7 +49,14 @@ class ProfileActivity : AppCompatActivity() {
         binding.btnShare.setOnClickListener {
             shareCard()
         }
+        binding.btnRepos.setOnClickListener {
+            val intent = Intent(this, RepositoriesActivity::class.java)
+            intent.putExtra("USERNAME", username)
+            startActivity(intent)
+        }
     }
+
+
 
     private fun observeData() {
         viewModel.user.observe(this) { user ->
