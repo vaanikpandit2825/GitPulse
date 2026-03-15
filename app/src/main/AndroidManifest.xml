@@ -55,6 +55,10 @@
             android:name=".RepositoriesActivity"
             android:exported="false"/>
 
+        <activity
+            android:name=".ShareCardActivity"
+            android:exported="false"/>
+
     </application>
 
 </manifest>
