@@ -1,5 +1,6 @@
 package com.example.gitpulse
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -7,7 +8,6 @@ import com.bumptech.glide.Glide
 import com.example.gitpulse.data.model.Repo
 import com.example.gitpulse.databinding.ActivityProfileBinding
 import com.example.gitpulse.viewmodel.GitHubViewModel
-import android.content.Intent
 
 class ProfileActivity : AppCompatActivity() {
 
@@ -46,12 +46,20 @@ class ProfileActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        binding.btnDuel.setOnClickListener {
+            val intent = Intent(this, DuelInputActivity::class.java)
+            intent.putExtra("USERNAME", username)
+            startActivity(intent)
+        }
+
         binding.btnShare.setOnClickListener {
             val score = binding.tvDevScore.text.toString()
             val language = binding.tvLanguages.text.toString()
+            val prefs = getSharedPreferences("gitpulse", MODE_PRIVATE)
+            val streak = prefs.getString("longestStreak", "0") ?: "0"
             val intent = Intent(this, ShareCardActivity::class.java).apply {
                 putExtra("USERNAME", username)
-                putExtra("STREAK", "14")
+                putExtra("STREAK", streak)
                 putExtra("LANGUAGE", language)
                 putExtra("DEV_SCORE", score)
             }

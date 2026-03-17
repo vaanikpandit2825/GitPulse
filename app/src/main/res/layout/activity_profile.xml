@@ -392,13 +392,52 @@
             android:id="@+id/btnShare"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:layout_marginTop="12dp"
-            android:text="[ Share Card ]"
+            android:layout_marginTop="14dp"
+            android:text="Share Card"
             android:textColor="#0D1117"
             android:textStyle="bold"
             android:textSize="15sp"
             app:backgroundTint="#5B8AFF"
             app:cornerRadius="16dp"/>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/btnDuel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="#161B22"
+            app:strokeColor="#30363D"
+            app:strokeWidth="1dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Developer Duel"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:layout_centerVertical="true"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="›"
+                    android:textColor="#8B949E"
+                    android:textSize="24sp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"/>
+
+            </RelativeLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 

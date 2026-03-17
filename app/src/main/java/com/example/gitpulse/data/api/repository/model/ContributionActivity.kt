@@ -18,6 +18,9 @@ class ContributionActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val username = intent.getStringExtra("USERNAME")
+
+        binding.btnBack.setOnClickListener { finish() }
+
         if (username != null) {
             fetchContributions(username)
         } else {
@@ -35,52 +38,30 @@ class ContributionActivity : AppCompatActivity() {
                     .timeout(10000)
                     .get()
 
-                // Build tooltip map: "for" attribute → tooltip text
                 val tooltipMap = mutableMapOf<String, String>()
                 for (tip in doc.select("tool-tip")) {
                     val forId = tip.attr("for")
                     val text = tip.text()
-                    if (forId.isNotEmpty()) {
-                        tooltipMap[forId] = text
-                    }
-                }
-
-                // Log first few to verify matching
-                tooltipMap.entries.take(3).forEach { (k, v) ->
-                    Log.d("GitPulse_TIP", "for='$k' → '$v'")
+                    if (forId.isNotEmpty()) tooltipMap[forId] = text
                 }
 
                 val tdElements = doc.select("td.ContributionCalendar-day")
-                tdElements.take(3).forEach {
-                    Log.d("GitPulse_TD", "id='${it.attr("id")}' level='${it.attr("data-level")}'")
-                }
-
                 val contributions = mutableListOf<ContributionDay>()
 
                 for (element in tdElements) {
                     val level = element.attr("data-level").toIntOrNull() ?: 0
                     val cellId = element.attr("id")
                     val tooltipText = tooltipMap[cellId] ?: ""
-
                     val count = when {
                         tooltipText.isEmpty() -> 0
                         tooltipText.contains("No contributions") -> 0
                         else -> Regex("^(\\d+)").find(tooltipText.trim())
                             ?.groupValues?.get(1)?.toIntOrNull() ?: 0
                     }
-
                     contributions.add(ContributionDay(count, level))
                 }
 
                 val total = contributions.sumOf { it.count }
-                Log.d("GitPulse", "Total contributions parsed: $total")
-
-
-                var currentStreak = 0
-                for (i in contributions.indices.reversed()) {
-                    if (contributions[i].count > 0) currentStreak++
-                    else break
-                }
 
                 var longestStreak = 0
                 var streak = 0
@@ -93,17 +74,26 @@ class ContributionActivity : AppCompatActivity() {
                     }
                 }
 
+                var currentStreak = 0
+                for (i in contributions.indices.reversed()) {
+                    if (contributions[i].count > 0) currentStreak++
+                    else break
+                }
+
+                val prefs = getSharedPreferences("gitpulse", MODE_PRIVATE)
+                prefs.edit().putString("longestStreak", longestStreak.toString()).apply()
+
                 runOnUiThread {
                     binding.recyclerContribution.layoutManager =
                         GridLayoutManager(this, 7, GridLayoutManager.HORIZONTAL, false)
                     binding.recyclerContribution.adapter = ContributionAdapter(contributions)
 
-
                     binding.tvTotalCommits.text = total.toString()
-                    binding.tvCurrentStreak.text = "$currentStreak days"
-                    binding.tvLongestStreak.text = "$longestStreak days"
+                    binding.tvLongestStreak.text = longestStreak.toString()
+                    binding.tvCurrentStreak.text = currentStreak.toString()
+                    binding.tvLongestStreakStat.text = "$longestStreak days"
+                    binding.tvCurrentStreakStat.text = "$currentStreak days"
                 }
-
 
             } catch (e: Exception) {
                 Log.e("GitPulse", "Error: ${e.message}", e)
