@@ -24,8 +24,8 @@ class DuelInputActivity : AppCompatActivity(){
                 return@setOnClickListener
             }
             val intent = Intent(this, DuelActivity::class.java).apply{
-                putExtra("USERNAME A",usernameA)
-                putExtra("USERNAME B",usernameB)
+                putExtra("USERNAME_A",usernameA)
+                putExtra("USERNAME_B",usernameB)
             }
             startActivity(intent)
         }
