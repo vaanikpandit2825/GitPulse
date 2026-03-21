@@ -1,7 +1,12 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
 }
+
+val properties = Properties()
+properties.load(project.rootProject.file("local.properties").inputStream())
 
 android {
     namespace = "com.example.gitpulse"
@@ -13,6 +18,9 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("String", "ADZUNA_APP_ID", "\"${properties["adzuna.app.id"]}\"")
+        buildConfigField("String", "ADZUNA_APP_KEY", "\"${properties["adzuna.app.key"]}\"")
     }
 
     buildTypes {
@@ -23,6 +31,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     compileOptions {

@@ -14,6 +14,7 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProfileBinding
     private lateinit var viewModel: GitHubViewModel
     private var currentUser: com.example.gitpulse.data.model.GitHubUser? = null
+    private var totalStars: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +50,17 @@ class ProfileActivity : AppCompatActivity() {
         binding.btnDuel.setOnClickListener {
             val intent = Intent(this, DuelInputActivity::class.java)
             intent.putExtra("USERNAME", username)
+            startActivity(intent)
+        }
+
+        binding.btnMarketValue.setOnClickListener {
+            val intent = Intent(this, MarketValueActivity::class.java).apply {
+                putExtra("USERNAME", username)
+                putExtra("TOP_LANGUAGE", binding.tvLanguages.text.toString())
+                putExtra("TOTAL_STARS", totalStars)
+                putExtra("FOLLOWERS", currentUser?.followers ?: 0)
+                putExtra("REPOS", currentUser?.public_repos ?: 0)
+            }
             startActivity(intent)
         }
 
@@ -93,7 +105,7 @@ class ProfileActivity : AppCompatActivity() {
                 val topLang = sortedStats.firstOrNull()?.first ?: "—"
                 binding.tvLanguages.text = topLang
 
-                var totalStars = 0
+                totalStars = 0
                 it.forEach { repo -> totalStars += repo.stargazers_count }
 
                 val languageCount = languageStats.size
