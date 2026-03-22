@@ -2,8 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Internet permission for GitHub API -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
         android:allowBackup="true"
@@ -15,41 +16,22 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GitPulse">
 
-        <!-- Main Screen -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
-
-
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
-
-
         </activity>
 
-        <!-- Profile Screen -->
         <activity
             android:name=".ProfileActivity"
             android:exported="false" />
 
-        <!-- Contribution Heatmap Screen -->
         <activity
             android:name=".ContributionActivity"
             android:exported="false" />
-
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.provider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
 
         <activity
             android:name=".RepositoriesActivity"
@@ -63,8 +45,31 @@
             android:name=".ShareCardActivity"
             android:exported="false"/>
 
-        <activity android:name=".DuelInputActivity" android:exported="false"/>
-        <activity android:name=".DuelActivity" android:exported="false"/>
+        <activity
+            android:name=".DuelInputActivity"
+            android:exported="false"/>
+
+        <activity
+            android:name=".DuelActivity"
+            android:exported="false"/>
+
+        <receiver
+            android:name=".StreakNotificationReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
     </application>
 
