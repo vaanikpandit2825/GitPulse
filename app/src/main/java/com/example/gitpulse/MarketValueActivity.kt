@@ -8,43 +8,36 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.gitpulse.databinding.ActivityMarketValueBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
 
 class MarketValueActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMarketValueBinding
+    private var topLanguage = "Unknown"
+    private var totalStars = 0
+    private var followers = 0
+    private var repos = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMarketValueBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val topLanguage = intent.getStringExtra("TOP_LANGUAGE") ?: "Unknown"
-        val totalStars = intent.getIntExtra("TOTAL_STARS", 0)
-        val followers = intent.getIntExtra("FOLLOWERS", 0)
-        val repos = intent.getIntExtra("REPOS", 0)
-
-        val prefs = getSharedPreferences("gitpulse", MODE_PRIVATE)
-        val longestStreak = prefs.getString("longestStreak", "0")?.toIntOrNull() ?: 0
+        topLanguage = intent.getStringExtra("TOP_LANGUAGE") ?: "Unknown"
+        totalStars = intent.getIntExtra("TOTAL_STARS", 0)
+        followers = intent.getIntExtra("FOLLOWERS", 0)
+        repos = intent.getIntExtra("REPOS", 0)
 
         binding.btnBack.setOnClickListener { finish() }
-        val streakBonus = when {
-            longestStreak > 100 -> 8
-            longestStreak > 30 -> 5
-            longestStreak > 7 -> 2
-            else -> 0
-        }
-
-        val starsBonus = when {
-            totalStars > 1000 -> 10
-            totalStars > 100 -> 5
-            totalStars > 10 -> 2
-            else -> 0
-        }
 
         binding.tvMarketLanguage.text = topLanguage
-        binding.tvMarketStreak.text = "+$streakBonus LPA"
-        binding.tvMarketStars.text = "+$starsBonus LPA"
+        binding.tvMarketRepos.text = "$repos repos"
+        binding.tvMarketStars.text = "$totalStars stars"
 
         val countries = listOf(
             "🇮🇳 India",
@@ -61,10 +54,8 @@ class MarketValueActivity : AppCompatActivity() {
             android.R.layout.simple_spinner_item,
             countries
         ) {
-            // getView controls how the SELECTED item looks (the collapsed spinner)
             override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
                 val view = super.getView(position, convertView, parent)
-                // cast to TextView so we can change text styling
                 (view as TextView).apply {
                     setTextColor(Color.WHITE)
                     textSize = 15f
@@ -90,82 +81,98 @@ class MarketValueActivity : AppCompatActivity() {
         binding.spinnerCountry.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 val country = countries[position]
-                updateSalary(country, topLanguage, longestStreak, totalStars, followers, repos)
+                binding.tvSalaryRange.text = "Loading..."
+                binding.tvBreakdown.text = "Fetching real job market data..."
+                fetchSalary(topLanguage, country)
             }
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
     }
 
-    private fun updateSalary(
-        country: String,
-        topLanguage: String,
-        longestStreak: Int,
-        totalStars: Int,
-        followers: Int,
-        repos: Int
-    ) {
-        val languageBase = when (topLanguage) {
-            "Rust" -> 25
-            "Kotlin" -> 22
-            "Swift" -> 22
-            "Go" -> 22
-            "TypeScript" -> 20
-            "Python" -> 18
-            "Java" -> 17
-            "JavaScript" -> 16
-            "Dart" -> 15
-            "C++" -> 20
-            "C#" -> 17
-            else -> 12
-        }
-        val streakBonus = when {
-            longestStreak > 100 -> 8
-            longestStreak > 30 -> 5
-            longestStreak > 7 -> 2
-            else -> 0
+    private fun fetchSalary(topLanguage: String, country: String) {
+        val countryCode = when {
+            country.contains("India") -> "in"
+            country.contains("USA") -> "us"
+            country.contains("UK") -> "gb"
+            country.contains("Australia") -> "au"
+            country.contains("Canada") -> "ca"
+            country.contains("Germany") -> "de"
+            country.contains("Singapore") -> "sg"
+            else -> "us"
         }
 
-        val starsBonus = when {
-            totalStars > 1000 -> 10
-            totalStars > 100 -> 5
-            totalStars > 10 -> 2
-            else -> 0
+        val currencySymbol = when {
+            country.contains("India") -> "₹"
+            country.contains("USA") -> "$"
+            country.contains("UK") -> "£"
+            country.contains("Australia") -> "A$"
+            country.contains("Canada") -> "C$"
+            country.contains("Germany") -> "€"
+            country.contains("Singapore") -> "S$"
+            else -> "$"
         }
 
-        val followersBonus = when {
-            followers > 1000 -> 8
-            followers > 100 -> 4
-            followers > 10 -> 1
-            else -> 0
-        }
+        val query = "$topLanguage developer"
 
-        val reposBonus = when {
-            repos > 50 -> 4
-            repos > 20 -> 2
-            repos > 5 -> 1
-            else -> 0
-        }
-        val minLPA = languageBase + streakBonus + starsBonus + followersBonus + reposBonus
-        val maxLPA = minLPA + 6
-        binding.tvSalaryRange.text = when {
-            country.contains("India") ->      "₹$minLPA - ₹$maxLPA LPA"
-            country.contains("USA") ->        "$${minLPA * 9}k - $${maxLPA * 9}k"
-            country.contains("UK") ->         "£${minLPA * 7}k - £${maxLPA * 7}k"
-            country.contains("Australia") ->  "A$${minLPA * 8}k - A$${maxLPA * 8}k"
-            country.contains("Canada") ->     "C$${minLPA * 8}k - C$${maxLPA * 8}k"
-            country.contains("Germany") ->    "€${minLPA * 7}k - €${maxLPA * 7}k"
-            country.contains("Singapore") ->  "S$${minLPA * 9}k - S$${maxLPA * 9}k"
-            else ->                           "$${minLPA * 9}k - $${maxLPA * 9}k"
-        }
+        lifecycleScope.launch {
+            try {
+                val url = "https://api.adzuna.com/v1/api/jobs/$countryCode/search/1" +
+                        "?app_id=${BuildConfig.ADZUNA_APP_ID}" +
+                        "&app_key=${BuildConfig.ADZUNA_APP_KEY}" +
+                        "&what=${query.replace(" ", "+")}" +
+                        "&salary_include_unknown=1" +
+                        "&results_per_page=20"
 
-        binding.tvBreakdown.text = """
-            Base ($topLanguage):       +$languageBase LPA
-            Streak bonus:              +$streakBonus LPA
-            Stars bonus:               +$starsBonus LPA
-            Followers bonus:           +$followersBonus LPA
-            Repos bonus:               +$reposBonus LPA
-            ──────────────────────────
-            Total:                      $minLPA - $maxLPA LPA
-        """.trimIndent()
+                val response = withContext(Dispatchers.IO) {
+                    java.net.URL(url).readText()
+                }
+
+                val json = JSONObject(response)
+                val results = json.getJSONArray("results")
+
+                var totalSalary = 0.0
+                var count = 0
+
+                for (i in 0 until results.length()) {
+                    val job = results.getJSONObject(i)
+                    if (job.has("salary_min") && job.has("salary_max")) {
+                        val min = job.getDouble("salary_min")
+                        val max = job.getDouble("salary_max")
+                        if (min > 0 && max > 0) {
+                            totalSalary += (min + max) / 2
+                            count++
+                        }
+                    }
+                }
+
+                if (count > 0) {
+                    val avgSalary = (totalSalary / count).toInt()
+                    val minSalary = (avgSalary * 0.85).toInt()
+                    val maxSalary = (avgSalary * 1.15).toInt()
+
+                    val countryName = country.drop(3)
+
+                    binding.tvSalaryRange.text = "$currencySymbol${formatNumber(minSalary)} - $currencySymbol${formatNumber(maxSalary)}"
+                    binding.tvBreakdown.text = "Based on $count real $topLanguage developer jobs in $countryName\n\nAverage market salary from live job listings powered by Adzuna."
+
+                } else {
+                    binding.tvSalaryRange.text = "No data found"
+                    binding.tvBreakdown.text = "No salary data available for $topLanguage developer in ${country.drop(3)} right now. Try a different country!"
+                }
+
+            } catch (e: Exception) {
+                binding.tvSalaryRange.text = "Failed to load"
+                binding.tvBreakdown.text = "Could not fetch salary data. Check your internet connection.\n\nError: ${e.message}"
+            }
+        }
+    }
+
+    private fun formatNumber(number: Int): String {
+        return when {
+            number >= 10000000 -> "${number / 10000000}Cr"
+            number >= 100000 -> "${number / 100000}.${(number % 100000) / 10000}L"
+            number >= 1000 -> "${number / 1000}k"
+            else -> number.toString()
+        }
     }
 }
