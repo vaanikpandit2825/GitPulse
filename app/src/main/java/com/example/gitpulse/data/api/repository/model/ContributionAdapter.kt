@@ -21,7 +21,7 @@ class ContributionAdapter(
     override fun getItemCount() = contributions.size
 
     override fun onBindViewHolder(holder: ContributionViewHolder, position: Int) {
-        // Use level (0-4) directly from GitHub's data-level attribute
+
         val color = when (contributions[position].level) {
             0 -> "#161B22"
             1 -> "#0E4429"

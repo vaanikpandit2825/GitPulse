@@ -1,3 +1,4 @@
+
 package com.example.gitpulse
 
 import android.os.Bundle
@@ -10,6 +11,7 @@ import org.jsoup.Jsoup
 import android.graphics.Color
 import java.util.Calendar
 import android.os.Build
+import java.time.LocalDate
 
 class ContributionActivity : AppCompatActivity() {
 
@@ -78,8 +80,7 @@ class ContributionActivity : AppCompatActivity() {
             try {
                 val url = "https://github.com/users/$username/contributions"
                 val doc = Jsoup.connect(url)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-                    .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                    .userAgent("Mozilla/5.0")
                     .timeout(10000)
                     .get()
 
@@ -95,62 +96,92 @@ class ContributionActivity : AppCompatActivity() {
 
                 for (element in tdElements) {
                     val level = element.attr("data-level").toIntOrNull() ?: 0
+                    val date = element.attr("data-date")
+
                     val cellId = element.attr("id")
                     val tooltipText = tooltipMap[cellId] ?: ""
+
                     val count = when {
-                        tooltipText.isEmpty() -> if (level > 0) 1 else 0
+                        tooltipText.isEmpty() -> 0
                         tooltipText.contains("No contributions") -> 0
                         else -> Regex("^(\\d+)").find(tooltipText.trim())
-                            ?.groupValues?.get(1)?.toIntOrNull() ?: if (level > 0) 1 else 0
+                            ?.groupValues?.get(1)?.toIntOrNull() ?: 0
                     }
-                    contributions.add(ContributionDay(count, level))
+
+                    contributions.add(ContributionDay(count, level, date))
                 }
 
-                val total = contributions.sumOf { it.count }
+                // ✅ SORT BY DATE (CRITICAL)
+                val sorted = contributions.sortedBy { it.date }
 
-                var longestStreak = 0
-                var streak = 0
-                for (day in contributions) {
-                    if (day.count > 0) {
-                        streak++
-                        if (streak > longestStreak) longestStreak = streak
-                    } else {
-                        streak = 0
-                    }
-                }
+                val total = sorted.sumOf { it.count }
 
+                // ✅ CURRENT STREAK (REAL LOGIC)
                 var currentStreak = 0
-                val streakList = contributions.dropLast(1)
-                for (i in streakList.indices.reversed()) {
-                    if (streakList[i].count > 0) currentStreak++
-                    else break
+                var today = LocalDate.now()
+
+                for (i in sorted.size - 1 downTo 0) {
+                    val day = sorted[i]
+                    val date = LocalDate.parse(day.date)
+
+                    if (day.count > 0 && date == today) {
+                        currentStreak++
+                        today = today.minusDays(1)
+                    } else if (day.count > 0 && date == today.minusDays(1)) {
+                        currentStreak++
+                        today = today.minusDays(1)
+                    } else {
+                        break
+                    }
                 }
 
-                // debug logs — placed AFTER contributions and streaks are calculated
-                Log.d("GitPulse_STREAK", "Total days parsed: ${contributions.size}")
-                Log.d("GitPulse_STREAK", "Longest streak: $longestStreak")
-                Log.d("GitPulse_STREAK", "Current streak: $currentStreak")
-                Log.d("GitPulse_STREAK", "Last 10 days: ${contributions.takeLast(10).map { it.count }}")
+                // ✅ LONGEST STREAK (DATE BASED)
+                var longestStreak = 0
+                var temp = 0
+
+                for (i in sorted.indices) {
+                    if (i == 0) {
+                        temp = if (sorted[i].count > 0) 1 else 0
+                    } else {
+                        val prev = LocalDate.parse(sorted[i - 1].date)
+                        val curr = LocalDate.parse(sorted[i].date)
+
+                        if (sorted[i].count > 0 && prev.plusDays(1) == curr) {
+                            temp++
+                        } else if (sorted[i].count > 0) {
+                            temp = 1
+                        } else {
+                            temp = 0
+                        }
+                    }
+                    longestStreak = maxOf(longestStreak, temp)
+                }
+
+                Log.d("GitPulse", "Current: $currentStreak")
+                Log.d("GitPulse", "Longest: $longestStreak")
+                Log.d("GitPulse", "Last 10: ${sorted.takeLast(10).map { it.date + ":" + it.count }}")
 
                 val prefs = getSharedPreferences("gitpulse", MODE_PRIVATE)
-                prefs.edit().putString("longestStreak", longestStreak.toString()).apply()
 
                 runOnUiThread {
                     binding.recyclerContribution.layoutManager =
                         GridLayoutManager(this, 7, GridLayoutManager.HORIZONTAL, false)
-                    binding.recyclerContribution.adapter = ContributionAdapter(contributions)
+                    binding.recyclerContribution.adapter = ContributionAdapter(sorted)
 
                     binding.tvTotalCommits.text = total.toString()
-                    binding.tvLongestStreak.text = longestStreak.toString()
+
                     binding.tvCurrentStreak.text = currentStreak.toString()
-                    binding.tvLongestStreakStat.text = "$longestStreak days"
+                    binding.tvLongestStreak.text = longestStreak.toString()
+
                     binding.tvCurrentStreakStat.text = "$currentStreak days"
+                    binding.tvLongestStreakStat.text = "$longestStreak days"
 
                     setupStreakGuardian(currentStreak, longestStreak)
 
                     prefs.edit()
                         .putString("currentStreak", currentStreak.toString())
-                        .putBoolean("committedToday", currentStreak > 0)
+                        .putString("longestStreak", longestStreak.toString())
+                        .putBoolean("committedToday", sorted.last().count > 0)
                         .apply()
 
                     StreakScheduler.scheduleDailyNotification(this)
@@ -165,3 +196,4 @@ class ContributionActivity : AppCompatActivity() {
         }.start()
     }
 }
+
