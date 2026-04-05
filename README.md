@@ -7,14 +7,14 @@
 
 <br/><br/>
 
-```
+<pre align="center">
   ██████╗ ██╗████████╗██████╗ ██╗   ██╗██╗     ███████╗███████╗
  ██╔════╝ ██║╚══██╔══╝██╔══██╗██║   ██║██║     ██╔════╝██╔════╝
  ██║  ███╗██║   ██║   ██████╔╝██║   ██║██║     ███████╗█████╗
  ██║   ██║██║   ██║   ██╔═══╝ ██║   ██║██║     ╚════██║██╔══╝
  ╚██████╔╝██║   ██║   ██║     ╚██████╔╝███████╗███████║███████╗
   ╚═════╝ ╚═╝   ╚═╝   ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝
-```
+</pre>
 
 ### **Your GitHub. Analyzed. Ranked. Dueled.**
 
@@ -91,7 +91,7 @@ Generate a beautiful, personalized **Dev Card** and share it anywhere. Choose fr
 
 ---
 
-## 📸 Screenshots
+## 📱 App Preview
 
 <div align="center">
 
@@ -282,7 +282,7 @@ See [LICENSE](./LICENSE) for the full text.
 
 ---
 
-##  Acknowledgements
+## 🙏 Acknowledgements
 
 - [GitHub REST API](https://docs.github.com/en/rest) — the backbone of all profile data
 - [Adzuna Jobs API](https://developer.adzuna.com/) — real-world salary benchmarking
