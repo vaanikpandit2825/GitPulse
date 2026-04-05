@@ -163,7 +163,7 @@ GitPulse follows a clean **MVVM** architecture with a unidirectional data flow:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/<your-username>/GitPulse.git
+git clone https://github.com/vaanikpandit2825/GitPulse.git
 cd GitPulse
 
 # 2. Open in Android Studio
