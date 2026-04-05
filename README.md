@@ -22,7 +22,6 @@
 
 <br/>
 
-[**Download APK**](#installation) · [**View Features**](#features) · [**Report Bug**](../../issues) · [**Request Feature**](../../issues)
 
 </div>
 
